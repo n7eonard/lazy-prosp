@@ -127,11 +127,11 @@ Deno.serve(async (req) => {
       
       const requestBody = {
         limit: 10,
+        offset: 0,
         filters: {
-          locations: {
-            country: countryCode
-          },
-          jobTitles: targetTitles
+          "filters.locations.country": [countryCode],
+          "filters.jobTitles": targetTitles,
+          "departments": ["product"]
         }
       };
       
