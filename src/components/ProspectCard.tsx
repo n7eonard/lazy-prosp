@@ -36,11 +36,11 @@ const ProspectCard = ({
         <div className="relative">
           <Avatar className="w-16 h-16">
             <AvatarImage 
-              src={avatar} 
+              src={avatar || `https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=100&h=100&fit=crop&crop=face`} 
               alt={name}
               className="object-cover"
             />
-            <AvatarFallback className="text-lg font-semibold">
+            <AvatarFallback className="text-lg font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white">
               {name.split(' ').map(n => n[0]).join('').toUpperCase()}
             </AvatarFallback>
           </Avatar>

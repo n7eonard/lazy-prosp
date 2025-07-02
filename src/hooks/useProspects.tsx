@@ -56,23 +56,38 @@ export const useProspects = () => {
   };
 
   const scanLinkedInProspects = async () => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in with LinkedIn to scan prospects",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       setScanning(true);
+      console.log('Starting prospect scan...');
       
       // Step 1: Scrape theorg.com for CPOs and VP Products
-      console.log('Starting theorg.com scraping...');
+      console.log('Calling scrape-theorg edge function...');
+      const session = await supabase.auth.getSession();
+      console.log('Session token:', session.data.session?.access_token ? 'Present' : 'Missing');
+      
       const { data: scrapingData, error: scrapingError } = await supabase.functions.invoke(
         'scrape-theorg',
         {
           headers: {
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            Authorization: `Bearer ${session.data.session?.access_token}`,
           },
         }
       );
 
+      console.log('Scraping response:', scrapingData);
+      console.log('Scraping error:', scrapingError);
+
       if (scrapingError) {
+        console.error('Scraping error details:', scrapingError);
         throw new Error(`Scraping failed: ${scrapingError.message}`);
       }
 
