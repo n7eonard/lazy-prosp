@@ -1,0 +1,89 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Building2, MapPin, Users, MessageSquare, ExternalLink } from "lucide-react";
+
+interface ProspectCardProps {
+  name: string;
+  title: string;
+  company: string;
+  location: string;
+  mutualConnections: number;
+  avatar: string;
+  companyLogo?: string;
+}
+
+const ProspectCard = ({ 
+  name, 
+  title, 
+  company, 
+  location, 
+  mutualConnections, 
+  avatar,
+  companyLogo 
+}: ProspectCardProps) => {
+  return (
+    <Card className="bg-gradient-card border-card-border p-6 shadow-card hover:shadow-glow transition-smooth group">
+      <div className="flex items-start gap-4">
+        {/* Avatar */}
+        <div className="relative">
+          <img 
+            src={avatar} 
+            alt={name}
+            className="w-16 h-16 rounded-lg object-cover border border-card-border"
+          />
+          {companyLogo && (
+            <img 
+              src={companyLogo}
+              alt={company}
+              className="absolute -bottom-2 -right-2 w-6 h-6 rounded border border-card-border bg-card"
+            />
+          )}
+        </div>
+        
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between mb-2">
+            <h3 className="font-semibold text-foreground truncate">{name}</h3>
+            <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-smooth">
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <p className="text-sm text-muted-foreground mb-1">{title}</p>
+          
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+            <Building2 className="w-3 h-3" />
+            <span>{company}</span>
+            <span>•</span>
+            <MapPin className="w-3 h-3" />
+            <span>{location}</span>
+          </div>
+          
+          {/* Connection Info */}
+          {mutualConnections > 0 && (
+            <div className="flex items-center gap-2 mb-4">
+              <Badge variant="secondary" className="text-xs">
+                <Users className="w-3 h-3 mr-1" />
+                {mutualConnections} mutual connection{mutualConnections > 1 ? 's' : ''}
+              </Badge>
+            </div>
+          )}
+          
+          {/* Actions */}
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1 gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Generate Message
+            </Button>
+            <Button variant="linkedin" size="sm">
+              Connect
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+export default ProspectCard;
