@@ -61,102 +61,93 @@ export const useProspects = () => {
     try {
       setScanning(true);
       
-      // Simulate LinkedIn API scanning for CPOs and VP Products
-      // In a real implementation, this would call LinkedIn API or theorg.com scraping service
-      const mockProspects = [
+      // Step 1: Scrape theorg.com for CPOs and VP Products
+      console.log('Starting theorg.com scraping...');
+      const { data: scrapingData, error: scrapingError } = await supabase.functions.invoke(
+        'scrape-theorg',
         {
-          name: "Sarah Chen",
-          title: "Chief Product Officer",
-          company: "TechFlow",
-          location: "Barcelona, Spain",
-          avatar_url: "https://images.unsplash.com/photo-1494790108755-2616b612b5bc?w=150&h=150&fit=crop&crop=face",
-          mutual_connections: 3,
-          linkedin_url: "https://linkedin.com/in/sarah-chen-cpo",
-          profile_data: {
-            experience: "10+ years in product management",
-            industry: "SaaS",
-            company_size: "500-1000"
-          }
-        },
+          headers: {
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+        }
+      );
+
+      if (scrapingError) {
+        throw new Error(`Scraping failed: ${scrapingError.message}`);
+      }
+
+      if (!scrapingData?.success || !scrapingData?.profiles) {
+        throw new Error('No profiles found from theorg.com');
+      }
+
+      console.log(`Found ${scrapingData.profiles.length} profiles from theorg.com`);
+
+      // Step 2: Analyze LinkedIn connections for each profile
+      console.log('Analyzing LinkedIn connections...');
+      const linkedinUrls = scrapingData.profiles
+        .map((profile: any) => profile.linkedin_url)
+        .filter(Boolean);
+
+      const { data: connectionData, error: connectionError } = await supabase.functions.invoke(
+        'analyze-connections',
         {
-          name: "Marcus Rodriguez",
-          title: "VP of Product",
-          company: "InnovateCorp",
-          location: "Madrid, Spain",
-          avatar_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-          mutual_connections: 1,
-          linkedin_url: "https://linkedin.com/in/marcus-rodriguez-vp",
-          profile_data: {
-            experience: "8+ years in product strategy",
-            industry: "Fintech",
-            company_size: "200-500"
-          }
-        },
-        {
-          name: "Elena Volkov",
-          title: "Chief Product Officer",
-          company: "ScaleUp Solutions",
-          location: "Valencia, Spain",
-          avatar_url: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-          mutual_connections: 0,
-          linkedin_url: "https://linkedin.com/in/elena-volkov-cpo",
-          profile_data: {
-            experience: "12+ years in product leadership",
-            industry: "E-commerce",
-            company_size: "100-200"
-          }
-        },
-        {
-          name: "James Thompson",
-          title: "VP Product Strategy",
-          company: "DataDriven Inc",
-          location: "Barcelona, Spain",
-          avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-          mutual_connections: 2,
-          linkedin_url: "https://linkedin.com/in/james-thompson-vp",
-          profile_data: {
-            experience: "9+ years in product analytics",
-            industry: "Data Analytics",
-            company_size: "50-100"
-          }
-        },
-        {
-          name: "Ana Gutierrez",
-          title: "Chief Product Officer",
-          company: "CloudNative Labs",
-          location: "Madrid, Spain",
-          avatar_url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face",
-          mutual_connections: 4,
-          linkedin_url: "https://linkedin.com/in/ana-gutierrez-cpo",
-          profile_data: {
-            experience: "11+ years in cloud products",
-            industry: "Cloud Infrastructure",
-            company_size: "1000+"
+          headers: {
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+          body: {
+            linkedin_urls: linkedinUrls
           }
         }
-      ];
+      );
 
-      // Clear existing prospects
+      if (connectionError) {
+        console.warn('Connection analysis failed:', connectionError.message);
+        // Continue without connection data
+      }
+
+      // Step 3: Combine profile data with connection analysis
+      const enrichedProspects = scrapingData.profiles.map((profile: any) => {
+        const connectionAnalysis = connectionData?.analyses?.find(
+          (analysis: any) => analysis.linkedin_url === profile.linkedin_url
+        );
+
+        return {
+          name: profile.name,
+          title: profile.title,
+          company: profile.company,
+          location: profile.location || "",
+          avatar_url: profile.avatar_url,
+          linkedin_url: profile.linkedin_url,
+          mutual_connections: connectionAnalysis?.mutual_connections || 0,
+          profile_data: {
+            connection_type: connectionAnalysis?.connection_type || 'none',
+            mutual_connection_names: connectionAnalysis?.mutual_connection_names || [],
+            industry: profile.company, // Use company as industry for now
+            experience: `${profile.title} at ${profile.company}`
+          }
+        };
+      });
+
+      // Step 4: Clear existing prospects and insert new ones
       await supabase
         .from('prospects')
         .delete()
         .eq('user_id', user.id);
 
-      // Insert new prospects
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('prospects')
         .insert(
-          mockProspects.map(prospect => ({
+          enrichedProspects.map(prospect => ({
             ...prospect,
             user_id: user.id
           }))
         );
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       toast({
         title: "Scan Complete!",
-        description: `Found ${mockProspects.length} relevant prospects`,
+        description: `Found ${enrichedProspects.length} relevant prospects with connection analysis`,
       });
 
       // Reload prospects
@@ -166,7 +157,7 @@ export const useProspects = () => {
       console.error('Error scanning prospects:', error);
       toast({
         title: "Scan Failed",
-        description: error.message,
+        description: error.message || "Failed to scan prospects",
         variant: "destructive",
       });
     } finally {
