@@ -19,6 +19,19 @@ Deno.serve(async (req) => {
     const user = await authenticateUser(req);
     console.log('User authenticated successfully:', user.id);
 
+    // Get request body
+    const body = await req.json();
+    const requestedCountryCode = body?.countryCode;
+    
+    if (!requestedCountryCode) {
+      return new Response(JSON.stringify({ 
+        error: 'Country code is required. Please select a country.' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Get the API key for theorg.com
     const theorgApiKey = Deno.env.get('THEORG_API_KEY');
     if (!theorgApiKey) {
@@ -30,8 +43,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Extract country code from user's LinkedIn data
-    const countryCode = extractCountryCode(user);
+    // Use the provided country code
+    const countryCode = extractCountryCode(requestedCountryCode);
 
     // Define target job titles for prospect search
     const targetTitles = [

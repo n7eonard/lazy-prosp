@@ -8,7 +8,6 @@ import { useProspects } from "@/hooks/useProspects";
 const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user, signOut } = useAuth();
-  const { scanLinkedInProspects } = useProspects();
   return (
     <nav className="fixed top-0 left-0 right-0 z-30 p-8 lg:p-12">
       <div className="flex items-center justify-between">
@@ -65,7 +64,6 @@ const Navbar = () => {
         onAuthSuccess={() => {
           setShowAuthModal(false);
           setTimeout(() => {
-            scanLinkedInProspects();
             document.getElementById('prospects-section')?.scrollIntoView({ behavior: 'smooth' });
           }, 1000);
         }}

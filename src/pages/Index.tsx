@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Search, Filter, Users, Loader2 } from "lucide-react";
 import { useProspects } from "@/hooks/useProspects";
 import { useAuth } from "@/hooks/useAuth";
+import { CountrySelector } from "@/components/CountrySelector";
 
 const Index = () => {
-  const { prospects, loading, scanning, scanLinkedInProspects } = useProspects();
+  const { prospects, loading, scanning, selectedCountry, setSelectedCountry, scanLinkedInProspects } = useProspects();
   const { user } = useAuth();
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -90,18 +91,36 @@ const Index = () => {
             </>
           )}
           
-          {/* Empty State */}
-          {!scanning && !loading && prospects.length === 0 && user && (
+          {/* Country Selection */}
+          {!scanning && user && prospects.length === 0 && (
+            <CountrySelector 
+              selectedCountry={selectedCountry}
+              onCountrySelect={setSelectedCountry}
+            />
+          )}
+
+          {/* Search Button */}
+          {!scanning && user && prospects.length === 0 && selectedCountry && (
+            <div className="text-center py-8">
+              <Button 
+                variant="default" 
+                className="gap-2" 
+                onClick={() => scanLinkedInProspects()}
+              >
+                <Search className="w-4 h-4" />
+                Search Prospects in {selectedCountry}
+              </Button>
+            </div>
+          )}
+
+          {/* Empty State - No Country Selected */}
+          {!scanning && !loading && prospects.length === 0 && user && !selectedCountry && (
             <div className="text-center py-12">
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">No Prospects Found</h3>
-              <p className="text-muted-foreground mb-6">
-                Search theorg.com database to discover product leaders in your area
+              <h3 className="text-lg font-semibold mb-2">Select a Country</h3>
+              <p className="text-muted-foreground">
+                Choose a country above to start discovering product leaders
               </p>
-              <Button variant="default" className="gap-2" onClick={scanLinkedInProspects}>
-                <Search className="w-4 h-4" />
-                Search Prospects
-              </Button>
             </div>
           )}
           

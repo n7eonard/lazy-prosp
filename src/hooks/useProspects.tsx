@@ -20,6 +20,7 @@ export const useProspects = () => {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -55,11 +56,21 @@ export const useProspects = () => {
     }
   };
 
-  const scanLinkedInProspects = async () => {
+  const scanLinkedInProspects = async (countryCode?: string) => {
     if (!user) {
       toast({
         title: "Authentication Required",
         description: "Please log in with LinkedIn to scan prospects",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const targetCountry = countryCode || selectedCountry;
+    if (!targetCountry) {
+      toast({
+        title: "Country Selection Required",
+        description: "Please select a country to search for prospects",
         variant: "destructive",
       });
       return;
@@ -80,6 +91,9 @@ export const useProspects = () => {
           headers: {
             Authorization: `Bearer ${session.data.session?.access_token}`,
           },
+          body: {
+            countryCode: targetCountry
+          }
         }
       );
 
@@ -146,6 +160,8 @@ export const useProspects = () => {
     prospects,
     loading,
     scanning,
+    selectedCountry,
+    setSelectedCountry,
     scanLinkedInProspects,
     loadProspects
   };

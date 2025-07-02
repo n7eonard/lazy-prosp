@@ -8,7 +8,7 @@ import { useProspects } from "@/hooks/useProspects";
 const Hero = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
-  const { scanLinkedInProspects } = useProspects();
+  const { selectedCountry } = useProspects();
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-hero relative overflow-hidden">
       {/* Background Elements */}
@@ -44,7 +44,6 @@ const Hero = () => {
             className="gap-2"
             onClick={() => {
               if (user) {
-                scanLinkedInProspects();
                 // Scroll to prospects section
                 document.getElementById('prospects-section')?.scrollIntoView({ behavior: 'smooth' });
               } else {
@@ -101,7 +100,6 @@ const Hero = () => {
         onAuthSuccess={() => {
           setShowAuthModal(false);
           setTimeout(() => {
-            scanLinkedInProspects();
             document.getElementById('prospects-section')?.scrollIntoView({ behavior: 'smooth' });
           }, 1000);
         }}
