@@ -7,7 +7,10 @@ export const searchProspects = async (theorgApiKey: string, countryCode: string,
     limit: 10,
     offset: 0,
     filters: {
-      "departments": ["product"]
+      "departments": ["product"],
+      "location": {
+        "country": countryCode
+      }
     }
   };
   
