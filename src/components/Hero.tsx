@@ -21,7 +21,7 @@ const Hero = () => {
           Find Your Next
           <br />
           <span className="text-foreground">
-            Product Leader
+            Product Gig
           </span>
         </h1>
         
