@@ -13,7 +13,7 @@ const Hero = () => {
         <div className="mb-6">
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-card-border rounded-full text-sm text-muted-foreground">
             <Zap className="w-4 h-4 text-primary" />
-            AI-Powered LinkedIn Prospecting
+            Sales prospecting done right
           </span>
         </div>
         
