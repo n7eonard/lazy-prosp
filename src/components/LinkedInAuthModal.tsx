@@ -22,8 +22,7 @@ const LinkedInAuthModal = ({ open, onOpenChange, onAuthSuccess }: LinkedInAuthMo
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
-          redirectTo: `${window.location.origin}/`,
-          scopes: 'r_liteprofile r_emailaddress w_member_social'
+          redirectTo: `${window.location.origin}/`
         }
       });
 
