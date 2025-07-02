@@ -12,9 +12,12 @@ Deno.serve(async (req) => {
 
   try {
     console.log('Starting prospect search using theorg.com API...');
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
     // Authenticate user
     const user = await authenticateUser(req);
+    console.log('User authenticated successfully:', user.id);
 
     // Get the API key for theorg.com
     const theorgApiKey = Deno.env.get('THEORG_API_KEY');
