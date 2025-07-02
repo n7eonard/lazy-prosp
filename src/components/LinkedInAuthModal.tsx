@@ -23,7 +23,7 @@ const LinkedInAuthModal = ({ open, onOpenChange, onAuthSuccess }: LinkedInAuthMo
         provider: 'linkedin_oidc',
         options: {
           redirectTo: `${window.location.origin}/`,
-          scopes: 'r_liteprofile r_emailaddress w_member_social'
+          scopes: 'openid profile email'
         }
       });
 
