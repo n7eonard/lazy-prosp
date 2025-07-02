@@ -7,6 +7,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  showLoginSuccessBanner: boolean;
+  setShowLoginSuccessBanner: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,6 +17,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showLoginSuccessBanner, setShowLoginSuccessBanner] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -29,6 +32,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setTimeout(() => {
             updateUserProfile(session.user);
           }, 0);
+          
+          // Show success banner 2 seconds after login
+          setTimeout(() => {
+            setShowLoginSuccessBanner(true);
+          }, 2000);
         }
       }
     );
@@ -85,7 +93,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      loading, 
+      signOut, 
+      showLoginSuccessBanner, 
+      setShowLoginSuccessBanner 
+    }}>
       {children}
     </AuthContext.Provider>
   );
