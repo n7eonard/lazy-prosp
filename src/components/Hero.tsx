@@ -1,7 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Target, Zap, MessageCircle } from "lucide-react";
+import LinkedInAuthModal from "./LinkedInAuthModal";
+import { useAuth } from "@/hooks/useAuth";
+import { useProspects } from "@/hooks/useProspects";
 
 const Hero = () => {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { user } = useAuth();
+  const { scanLinkedInProspects } = useProspects();
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-hero relative overflow-hidden">
       {/* Background Elements */}
@@ -31,8 +38,21 @@ const Hero = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <Button variant="hero" size="lg" className="gap-2">
-            Start Prospecting
+          <Button 
+            variant="hero" 
+            size="lg" 
+            className="gap-2"
+            onClick={() => {
+              if (user) {
+                scanLinkedInProspects();
+                // Scroll to prospects section
+                document.getElementById('prospects-section')?.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                setShowAuthModal(true);
+              }
+            }}
+          >
+            {user ? 'Start Prospecting' : 'Get Started'}
             <ArrowRight className="w-5 h-5" />
           </Button>
           <Button variant="outline" size="lg" className="gap-2">
@@ -74,6 +94,18 @@ const Hero = () => {
           </div>
         </div>
       </div>
+      
+      <LinkedInAuthModal 
+        open={showAuthModal}
+        onOpenChange={setShowAuthModal}
+        onAuthSuccess={() => {
+          setShowAuthModal(false);
+          setTimeout(() => {
+            scanLinkedInProspects();
+            document.getElementById('prospects-section')?.scrollIntoView({ behavior: 'smooth' });
+          }, 1000);
+        }}
+      />
     </section>
   );
 };

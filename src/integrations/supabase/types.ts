@@ -9,7 +9,87 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          linkedin_access_token: string | null
+          linkedin_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          linkedin_access_token?: string | null
+          linkedin_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          linkedin_access_token?: string | null
+          linkedin_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      prospects: {
+        Row: {
+          avatar_url: string | null
+          company: string
+          created_at: string
+          id: string
+          linkedin_url: string | null
+          location: string | null
+          mutual_connections: number | null
+          name: string
+          profile_data: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company: string
+          created_at?: string
+          id?: string
+          linkedin_url?: string | null
+          location?: string | null
+          mutual_connections?: number | null
+          name: string
+          profile_data?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company?: string
+          created_at?: string
+          id?: string
+          linkedin_url?: string | null
+          location?: string | null
+          mutual_connections?: number | null
+          name?: string
+          profile_data?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
