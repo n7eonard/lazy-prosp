@@ -8,7 +8,7 @@ import { useProspects } from "@/hooks/useProspects";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  const { prospects, loading, scanning } = useProspects();
+  const { prospects, loading, scanning, scanLinkedInProspects } = useProspects();
   const { user } = useAuth();
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -98,7 +98,7 @@ const Index = () => {
               <p className="text-muted-foreground mb-6">
                 Start a scan to discover CPOs and VP Products in your network
               </p>
-              <Button variant="default" className="gap-2">
+              <Button variant="default" className="gap-2" onClick={scanLinkedInProspects}>
                 <Search className="w-4 h-4" />
                 Start Scanning
               </Button>
