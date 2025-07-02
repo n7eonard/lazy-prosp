@@ -67,15 +67,15 @@ export const useProspects = () => {
     
     try {
       setScanning(true);
-      console.log('Starting prospect scan...');
+      console.log('Starting prospect search...');
       
-      // Step 1: Scrape theorg.com for CPOs and VP Products
-      console.log('Calling scrape-theorg edge function...');
+      // Call the new search-prospects edge function
+      console.log('Calling search-prospects edge function...');
       const session = await supabase.auth.getSession();
       console.log('Session token:', session.data.session?.access_token ? 'Present' : 'Missing');
       
-      const { data: scrapingData, error: scrapingError } = await supabase.functions.invoke(
-        'scrape-theorg',
+      const { data: searchData, error: searchError } = await supabase.functions.invoke(
+        'search-prospects',
         {
           headers: {
             Authorization: `Bearer ${session.data.session?.access_token}`,
@@ -83,78 +83,34 @@ export const useProspects = () => {
         }
       );
 
-      console.log('Scraping response:', scrapingData);
-      console.log('Scraping error:', scrapingError);
+      console.log('Search response:', searchData);
+      console.log('Search error:', searchError);
 
-      if (scrapingError) {
-        console.error('Scraping error details:', scrapingError);
-        throw new Error(`Scraping failed: ${scrapingError.message}`);
+      if (searchError) {
+        console.error('Search error details:', searchError);
+        throw new Error(`Prospect search failed: ${searchError.message}`);
       }
 
-      if (!scrapingData?.success || !scrapingData?.profiles) {
-        throw new Error('No profiles found from theorg.com');
+      if (!searchData?.success || !searchData?.prospects) {
+        throw new Error('No prospects found from theorg.com');
       }
 
-      console.log(`Found ${scrapingData.profiles.length} profiles from theorg.com`);
+      console.log(`Found ${searchData.prospects.length} prospects from theorg.com`);
 
-      // Step 2: Analyze LinkedIn connections for each profile
-      console.log('Analyzing LinkedIn connections...');
-      const linkedinUrls = scrapingData.profiles
-        .map((profile: any) => profile.linkedin_url)
-        .filter(Boolean);
-
-      const { data: connectionData, error: connectionError } = await supabase.functions.invoke(
-        'analyze-connections',
-        {
-          headers: {
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          },
-          body: {
-            linkedin_urls: linkedinUrls
-          }
-        }
-      );
-
-      if (connectionError) {
-        console.warn('Connection analysis failed:', connectionError.message);
-        // Continue without connection data
-      }
-
-      // Step 3: Combine profile data with connection analysis
-      const enrichedProspects = scrapingData.profiles.map((profile: any) => {
-        const connectionAnalysis = connectionData?.analyses?.find(
-          (analysis: any) => analysis.linkedin_url === profile.linkedin_url
-        );
-
-        return {
-          name: profile.name,
-          title: profile.title,
-          company: profile.company,
-          location: profile.location || "",
-          avatar_url: profile.avatar_url,
-          linkedin_url: profile.linkedin_url,
-          mutual_connections: connectionAnalysis?.mutual_connections || 0,
-          profile_data: {
-            connection_type: connectionAnalysis?.connection_type || 'none',
-            mutual_connection_names: connectionAnalysis?.mutual_connection_names || [],
-            industry: profile.company,
-            experience: `${profile.title} at ${profile.company}`,
-            work_email: profile.work_email,
-            start_date: profile.start_date
-          }
-        };
-      });
-
-      // Step 4: Clear existing prospects and insert new ones
-      await supabase
+      // Clear existing prospects and insert new ones
+      const { error: deleteError } = await supabase
         .from('prospects')
         .delete()
         .eq('user_id', user.id);
 
+      if (deleteError) {
+        console.error('Error deleting existing prospects:', deleteError);
+      }
+
       const { error: insertError } = await supabase
         .from('prospects')
         .insert(
-          enrichedProspects.map(prospect => ({
+          searchData.prospects.map((prospect: any) => ({
             ...prospect,
             user_id: user.id
           }))
@@ -163,18 +119,18 @@ export const useProspects = () => {
       if (insertError) throw insertError;
 
       toast({
-        title: "Scan Complete!",
-        description: `Found ${enrichedProspects.length} relevant prospects with connection analysis`,
+        title: "Search Complete!",
+        description: `Found ${searchData.prospects.length} product leaders in ${searchData.searchLocation}`,
       });
 
       // Reload prospects
       await loadProspects();
       
     } catch (error: any) {
-      console.error('Error scanning prospects:', error);
+      console.error('Error searching prospects:', error);
       toast({
-        title: "Scan Failed",
-        description: error.message || "Failed to scan prospects",
+        title: "Search Failed",
+        description: error.message || "Failed to search prospects",
         variant: "destructive",
       });
     } finally {

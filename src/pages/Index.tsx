@@ -56,9 +56,9 @@ const Index = () => {
           {scanning && (
             <div className="text-center py-12">
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-              <h3 className="text-lg font-semibold mb-2">Scanning LinkedIn Profiles</h3>
+              <h3 className="text-lg font-semibold mb-2">Searching Product Leaders</h3>
               <p className="text-muted-foreground">
-                Finding CPOs and VP Products in your network...
+                Finding CPOs and VP Products using theorg.com database...
               </p>
             </div>
           )}
@@ -96,11 +96,11 @@ const Index = () => {
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">No Prospects Found</h3>
               <p className="text-muted-foreground mb-6">
-                Start a scan to discover CPOs and VP Products in your network
+                Search theorg.com database to discover product leaders in your area
               </p>
               <Button variant="default" className="gap-2" onClick={scanLinkedInProspects}>
                 <Search className="w-4 h-4" />
-                Start Scanning
+                Search Prospects
               </Button>
             </div>
           )}
