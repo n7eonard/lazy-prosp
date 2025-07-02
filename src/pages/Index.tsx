@@ -76,6 +76,7 @@ const Index = () => {
                     location={prospect.location || ""}
                     mutualConnections={prospect.mutual_connections}
                     avatar={prospect.avatar_url || ""}
+                    linkedinUrl={prospect.linkedin_url || ""}
                   />
                 ))}
               </div>

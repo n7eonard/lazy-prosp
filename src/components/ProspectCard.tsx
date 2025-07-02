@@ -11,6 +11,7 @@ interface ProspectCardProps {
   mutualConnections: number;
   avatar: string;
   companyLogo?: string;
+  linkedinUrl?: string;
 }
 
 const ProspectCard = ({ 
@@ -20,7 +21,8 @@ const ProspectCard = ({
   location, 
   mutualConnections, 
   avatar,
-  companyLogo 
+  companyLogo,
+  linkedinUrl 
 }: ProspectCardProps) => {
   return (
     <Card className="bg-gradient-card border-card-border p-6 shadow-card hover:shadow-glow transition-smooth group">
@@ -45,7 +47,13 @@ const ProspectCard = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-2">
             <h3 className="font-semibold text-foreground truncate">{name}</h3>
-            <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-smooth">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="opacity-0 group-hover:opacity-100 transition-smooth"
+              onClick={() => linkedinUrl && window.open(linkedinUrl, '_blank')}
+              disabled={!linkedinUrl}
+            >
               <ExternalLink className="w-4 h-4" />
             </Button>
           </div>
