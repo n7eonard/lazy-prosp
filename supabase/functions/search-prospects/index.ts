@@ -71,20 +71,41 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Extract location from LinkedIn user metadata
-    let userLocation = 'United States'; // Default fallback
+    // Extract country code from LinkedIn user metadata
+    let countryCode = 'US'; // Default fallback
     
     console.log('User metadata:', user.user_metadata);
     
-    if (user.user_metadata?.location) {
-      userLocation = user.user_metadata.location;
-    } else if (user.user_metadata?.locality) {
-      userLocation = user.user_metadata.locality;
-    } else if (user.user_metadata?.country) {
-      userLocation = user.user_metadata.country;
+    // Try to extract country code from user metadata
+    if (user.user_metadata?.country) {
+      const country = user.user_metadata.country.toLowerCase();
+      // Map common country names to ISO codes
+      const countryMap: { [key: string]: string } = {
+        'united states': 'US',
+        'canada': 'CA',
+        'united kingdom': 'GB',
+        'germany': 'DE',
+        'france': 'FR',
+        'spain': 'ES',
+        'italy': 'IT',
+        'netherlands': 'NL',
+        'australia': 'AU',
+        'india': 'IN',
+        'singapore': 'SG',
+        'japan': 'JP',
+        'brazil': 'BR',
+        'mexico': 'MX'
+      };
+      countryCode = countryMap[country] || user.user_metadata.country.slice(0, 2).toUpperCase();
+    } else if (user.user_metadata?.locale) {
+      // Extract from locale like "en_US"
+      const localeParts = user.user_metadata.locale.split('_');
+      if (localeParts.length > 1) {
+        countryCode = localeParts[1];
+      }
     }
 
-    console.log(`User location determined: ${userLocation}`);
+    console.log(`Country code determined: ${countryCode}`);
 
     // Define target job titles for prospect search
     const targetTitles = [
@@ -98,70 +119,51 @@ Deno.serve(async (req) => {
       'CPO'
     ];
 
-    const allProspects: TheOrgPosition[] = [];
-
-    // Search for each title using theorg.com Position API
-    for (const title of targetTitles) {
-      try {
-        console.log(`Searching for: ${title} in ${userLocation}`);
-        
-        // Build API URL with proper parameters
-        const searchParams = new URLSearchParams({
-          title: title,
-          location: userLocation,
-          limit: '25'
-        });
-        
-        const apiUrl = `https://api.theorg.com/v1/positions?${searchParams.toString()}`;
-        console.log(`API URL: ${apiUrl}`);
-        
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            'X-Api-Key': theorgApiKey,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        });
-
-        console.log(`Response status for ${title}: ${response.status}`);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`API request failed for ${title}:`, response.status, response.statusText, errorText);
-          
-          // If we get a 429 (rate limit), wait and continue
-          if (response.status === 429) {
-            console.log('Rate limited, waiting 1 second...');
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-          continue;
+    // Make a single POST request to search for all titles
+    let allProspects: TheOrgPosition[] = [];
+    
+    try {
+      console.log(`Searching for product leaders in country: ${countryCode}`);
+      
+      const requestBody = {
+        limit: 10,
+        filters: {
+          locations: {
+            country: countryCode
+          },
+          jobTitles: targetTitles
         }
+      };
+      
+      console.log('Request body:', JSON.stringify(requestBody, null, 2));
+      
+      const response = await fetch('https://api.theorg.com/v1/positions', {
+        method: 'POST',
+        headers: {
+          'X-Api-Key': theorgApiKey,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
 
-        const responseData: TheOrgResponse = await response.json();
-        console.log(`Found ${responseData.data?.length || 0} positions for ${title}`);
-        
-        if (responseData.data && Array.isArray(responseData.data)) {
-          // Filter out duplicates based on LinkedIn URL or email
-          const newProspects = responseData.data.filter(prospect => {
-            const exists = allProspects.some(existing => 
-              (existing.linkedInUrl && prospect.linkedInUrl && existing.linkedInUrl === prospect.linkedInUrl) ||
-              (existing.workEmail && prospect.workEmail && existing.workEmail === prospect.workEmail) ||
-              (existing.name === prospect.name && existing.company.name === prospect.company.name)
-            );
-            return !exists;
-          });
-          
-          allProspects.push(...newProspects);
-          console.log(`Added ${newProspects.length} new unique prospects (${allProspects.length} total)`);
-        }
-
-        // Rate limiting - wait between requests
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-      } catch (error) {
-        console.error(`Error searching for ${title}:`, error);
+      console.log(`Response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`API request failed:`, response.status, response.statusText, errorText);
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
+
+      const responseData: TheOrgResponse = await response.json();
+      console.log(`Found ${responseData.data?.length || 0} positions`);
+      console.log('Response data:', JSON.stringify(responseData, null, 2));
+      
+      allProspects = responseData.data || [];
+      
+    } catch (error) {
+      console.error(`Error searching prospects:`, error);
+      throw error;
     }
 
     console.log(`Total unique prospects found: ${allProspects.length}`);
@@ -171,7 +173,7 @@ Deno.serve(async (req) => {
       name: prospect.name || 'Unknown',
       title: prospect.title || 'Unknown Title',
       company: prospect.company?.name || 'Unknown Company',
-      location: prospect.location || userLocation,
+      location: prospect.location || countryCode,
       avatar_url: prospect.profilePhotoUrl || null,
       linkedin_url: prospect.linkedInUrl || null,
       mutual_connections: 0, // We'll set this to 0 since we're not analyzing connections
@@ -191,7 +193,7 @@ Deno.serve(async (req) => {
       success: true,
       prospects: transformedProspects,
       count: transformedProspects.length,
-      searchLocation: userLocation,
+      searchLocation: countryCode,
       searchTitles: targetTitles
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
