@@ -35,8 +35,8 @@ export const searchProspects = async (theorgApiKey: string, countryCode: string,
   const responseData: TheOrgResponse = await response.json();
   console.log(`API Response type: ${typeof responseData}`);
   console.log(`API Response structure:`, JSON.stringify(responseData, null, 2));
-  console.log(`Response data array length: ${responseData.data?.length || 'N/A'}`);
-  console.log(`Response data type: ${typeof responseData.data}`);
+  console.log(`Response items array length: ${responseData.items?.length || 'N/A'}`);
+  console.log(`Response items type: ${typeof responseData.items}`);
   
-  return responseData.data || [];
+  return responseData.items || [];
 };

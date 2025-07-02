@@ -10,17 +10,16 @@ export const transformProspects = (prospects: TheOrgPosition[], countryCode: str
   return prospects.map(prospect => ({
     name: prospect.name || 'Unknown',
     title: prospect.title || 'Unknown Title',
-    company: prospect.company?.name || 'Unknown Company',
-    location: prospect.location || countryCode,
+    company: prospect.currentCompany?.name || 'Unknown Company',
+    location: prospect.location ? `${prospect.location.city || ''}, ${prospect.location.country || countryCode}`.trim().replace(/^,\s*/, '') : countryCode,
     avatar_url: prospect.profilePhotoUrl || null,
     linkedin_url: prospect.linkedInUrl || null,
     mutual_connections: 0, // We'll set this to 0 since we're not analyzing connections
     profile_data: {
       work_email: prospect.workEmail || null,
-      personal_email: prospect.personalEmail || null,
-      phone_number: prospect.phoneNumber || null,
+      phone_number: prospect.directDial || null,
       start_date: prospect.startDate || null,
-      company_domain: prospect.company?.domain || null,
+      company_domains: prospect.currentCompany?.domains || null,
       source: 'theorg.com'
     }
   }));

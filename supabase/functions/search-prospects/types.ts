@@ -2,21 +2,24 @@ export interface TheOrgPosition {
   id: string;
   name: string;
   title: string;
-  company: {
+  currentCompany: {
     name: string;
-    domain?: string;
+    domains?: string[];
   };
-  location?: string;
+  location?: {
+    city?: string;
+    country?: string;
+    state?: string;
+  };
   linkedInUrl?: string;
   profilePhotoUrl?: string;
   workEmail?: string;
-  personalEmail?: string;
-  phoneNumber?: string;
+  directDial?: string;
   startDate?: string;
 }
 
 export interface TheOrgResponse {
-  data: TheOrgPosition[];
+  items: TheOrgPosition[];
   meta?: {
     total: number;
     page: number;
