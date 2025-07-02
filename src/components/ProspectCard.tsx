@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Building2, MapPin, Users, MessageSquare, ExternalLink } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Building2, MapPin, Users, MessageSquare, ExternalLink, Mail, Calendar } from "lucide-react";
 
 interface ProspectCardProps {
   name: string;
@@ -12,6 +13,8 @@ interface ProspectCardProps {
   avatar: string;
   companyLogo?: string;
   linkedinUrl?: string;
+  workEmail?: string;
+  startDate?: string;
 }
 
 const ProspectCard = ({ 
@@ -22,18 +25,25 @@ const ProspectCard = ({
   mutualConnections, 
   avatar,
   companyLogo,
-  linkedinUrl 
+  linkedinUrl,
+  workEmail,
+  startDate
 }: ProspectCardProps) => {
   return (
     <Card className="bg-gradient-card border-card-border p-6 shadow-card hover:shadow-glow transition-smooth group">
       <div className="flex items-start gap-4">
         {/* Avatar */}
         <div className="relative">
-          <img 
-            src={avatar} 
-            alt={name}
-            className="w-16 h-16 rounded-lg object-cover border border-card-border"
-          />
+          <Avatar className="w-16 h-16">
+            <AvatarImage 
+              src={avatar} 
+              alt={name}
+              className="object-cover"
+            />
+            <AvatarFallback className="text-lg font-semibold">
+              {name.split(' ').map(n => n[0]).join('').toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           {companyLogo && (
             <img 
               src={companyLogo}
@@ -60,12 +70,28 @@ const ProspectCard = ({
           
           <p className="text-sm text-muted-foreground mb-1">{title}</p>
           
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
             <Building2 className="w-3 h-3" />
             <span>{company}</span>
             <span>•</span>
             <MapPin className="w-3 h-3" />
             <span>{location}</span>
+          </div>
+          
+          {/* Additional Info */}
+          <div className="space-y-1 mb-3">
+            {workEmail && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Mail className="w-3 h-3" />
+                <span>{workEmail}</span>
+              </div>
+            )}
+            {startDate && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Calendar className="w-3 h-3" />
+                <span>Started {new Date(startDate).toLocaleDateString()}</span>
+              </div>
+            )}
           </div>
           
           {/* Connection Info */}

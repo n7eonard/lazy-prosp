@@ -5,13 +5,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface TheOrgProfile {
+interface TheOrgPosition {
+  id: string;
   name: string;
   title: string;
-  company: string;
+  company: {
+    name: string;
+    domain?: string;
+  };
   location?: string;
-  linkedin_url?: string;
-  avatar_url?: string;
+  linkedInUrl?: string;
+  profilePhotoUrl?: string;
+  workEmail?: string;
+  startDate?: string;
 }
 
 Deno.serve(async (req) => {
@@ -43,65 +49,94 @@ Deno.serve(async (req) => {
 
     console.log('Authenticated user:', user.id);
 
-    // Scrape theorg.com for CPOs and VP Products
-    // Using realistic profiles found on theorg.com
-    const scrapedProfiles: TheOrgProfile[] = [
-      {
-        name: "Maria Gonzalez",
-        title: "Chief Product Officer",
-        company: "Glovo",
-        location: "Barcelona, Spain",
-        avatar_url: "https://media.licdn.com/dms/image/C4E03AQHXJkOoJaEQUg/profile-displayphoto-shrink_200_200/0/1634567890123?e=1709164800&v=beta&t=abc123",
-        linkedin_url: "https://linkedin.com/in/mariagonzalez-cpo-glovo"
-      },
-      {
-        name: "Carlos Moreno",
-        title: "VP of Product",
-        company: "Cabify", 
-        location: "Madrid, Spain",
-        avatar_url: "https://media.licdn.com/dms/image/C4D03AQGKjHfLmNjKpw/profile-displayphoto-shrink_200_200/0/1645123456789?e=1709164800&v=beta&t=def456",
-        linkedin_url: "https://linkedin.com/in/carlosmoreno-vp-product-cabify"
-      },
-      {
-        name: "Laura Rodriguez",
-        title: "Chief Product Officer",
-        company: "Typeform",
-        location: "Barcelona, Spain", 
-        avatar_url: "https://media.licdn.com/dms/image/C5E03AQFNm3kLpWxJYw/profile-displayphoto-shrink_200_200/0/1656789012345?e=1709164800&v=beta&t=ghi789",
-        linkedin_url: "https://linkedin.com/in/laurarodriguez-cpo-typeform"
-      },
-      {
-        name: "Miguel Santos",
-        title: "VP Product Strategy", 
-        company: "Wallapop",
-        location: "Barcelona, Spain",
-        avatar_url: "https://media.licdn.com/dms/image/C4D03AQE8yNzRmKjVfw/profile-displayphoto-shrink_200_200/0/1667890123456?e=1709164800&v=beta&t=jkl012",
-        linkedin_url: "https://linkedin.com/in/miguelsantos-vp-wallapop"
-      },
-      {
-        name: "Ana Jimenez",
-        title: "Chief Product Officer",
-        company: "Red Points",
-        location: "Barcelona, Spain",
-        avatar_url: "https://media.licdn.com/dms/image/C4E03AQHvLmKjWxNpQ/profile-displayphoto-shrink_200_200/0/1678901234567?e=1709164800&v=beta&t=mno345",
-        linkedin_url: "https://linkedin.com/in/anajimenez-cpo-redpoints"
-      },
-      {
-        name: "Roberto Silva",
-        title: "VP of Product Management",
-        company: "Travelperk",
-        location: "Barcelona, Spain",
-        avatar_url: "https://media.licdn.com/dms/image/C5D03AQGNmKjLpWxJYw/profile-displayphoto-shrink_200_200/0/1689012345678?e=1709164800&v=beta&t=pqr678",
-        linkedin_url: "https://linkedin.com/in/robertosilva-vp-travelperk"
-      }
+    // Get the API key for theorg.com
+    const theorgApiKey = Deno.env.get('THEORG_API_KEY');
+    if (!theorgApiKey) {
+      return new Response(JSON.stringify({ 
+        error: 'THEORG_API_KEY not configured. Please set up your API key.' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Get user's profile to determine location
+    console.log('Fetching user profile for location...');
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    // Extract location from profile or use default
+    const userLocation = profile?.full_name?.includes('Barcelona') ? 'Barcelona' : 
+                        profile?.full_name?.includes('Madrid') ? 'Madrid' :
+                        profile?.full_name?.includes('London') ? 'London' :
+                        'San Francisco'; // Default location
+
+    console.log(`User location determined: ${userLocation}`);
+
+    // Search for positions using theorg.com API
+    console.log('Searching for CPOs and VP Products on theorg.com...');
+    
+    const searchTitles = [
+      'Chief Product Officer',
+      'VP Product', 
+      'Head of Product',
+      'VP of Product',
+      'Vice President of Product'
     ];
 
-    console.log(`Found ${scrapedProfiles.length} profiles from theorg.com`);
+    const allPositions: TheOrgPosition[] = [];
+
+    for (const title of searchTitles) {
+      try {
+        console.log(`Searching for positions with title: ${title}`);
+        
+        const response = await fetch(`https://api.theorg.com/v1/positions?title=${encodeURIComponent(title)}&location=${encodeURIComponent(userLocation)}&limit=10`, {
+          headers: {
+            'X-Api-Key': theorgApiKey,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          console.error(`API request failed for title ${title}:`, response.status, response.statusText);
+          continue;
+        }
+
+        const data = await response.json();
+        console.log(`Found ${data.data?.length || 0} positions for ${title}`);
+        
+        if (data.data && Array.isArray(data.data)) {
+          allPositions.push(...data.data);
+        }
+      } catch (error) {
+        console.error(`Error searching for ${title}:`, error);
+      }
+    }
+
+    console.log(`Total positions found: ${allPositions.length}`);
+
+    // Transform the data to match our interface
+    const transformedProfiles = allPositions.map(position => ({
+      name: position.name || 'N/A',
+      title: position.title || 'N/A',
+      company: position.company?.name || 'N/A',
+      location: position.location || userLocation,
+      avatar_url: position.profilePhotoUrl,
+      linkedin_url: position.linkedInUrl,
+      work_email: position.workEmail,
+      start_date: position.startDate
+    }));
+
+    console.log(`Transformed ${transformedProfiles.length} profiles from theorg.com`);
 
     return new Response(JSON.stringify({ 
       success: true,
-      profiles: scrapedProfiles,
-      count: scrapedProfiles.length
+      profiles: transformedProfiles,
+      count: transformedProfiles.length,
+      userLocation
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

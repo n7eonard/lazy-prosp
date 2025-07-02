@@ -122,8 +122,10 @@ export const useProspects = () => {
           profile_data: {
             connection_type: connectionAnalysis?.connection_type || 'none',
             mutual_connection_names: connectionAnalysis?.mutual_connection_names || [],
-            industry: profile.company, // Use company as industry for now
-            experience: `${profile.title} at ${profile.company}`
+            industry: profile.company,
+            experience: `${profile.title} at ${profile.company}`,
+            work_email: profile.work_email,
+            start_date: profile.start_date
           }
         };
       });
