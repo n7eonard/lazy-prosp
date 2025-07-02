@@ -60,19 +60,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get user's profile to determine location
-    console.log('Fetching user profile for location...');
+    // Get user's profile to determine location from LinkedIn data
+    console.log('Fetching user profile for LinkedIn location...');
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', user.id)
       .single();
 
-    // Extract location from profile or use default
-    const userLocation = profile?.full_name?.includes('Barcelona') ? 'Barcelona' : 
-                        profile?.full_name?.includes('Madrid') ? 'Madrid' :
-                        profile?.full_name?.includes('London') ? 'London' :
-                        'San Francisco'; // Default location
+    console.log('Profile data:', profile);
+
+    // Extract location from LinkedIn user metadata or profile
+    let userLocation = 'San Francisco'; // Default fallback
+    
+    // Try to get location from user metadata (LinkedIn profile)
+    if (user.user_metadata?.location) {
+      userLocation = user.user_metadata.location;
+    } else if (user.user_metadata?.locality) {
+      userLocation = user.user_metadata.locality;
+    } else if (user.user_metadata?.country) {
+      userLocation = user.user_metadata.country;
+    }
 
     console.log(`User location determined: ${userLocation}`);
 
@@ -91,25 +99,36 @@ Deno.serve(async (req) => {
 
     for (const title of searchTitles) {
       try {
-        console.log(`Searching for positions with title: ${title}`);
+        console.log(`Searching for positions with title: ${title} in ${userLocation}`);
         
-        const response = await fetch(`https://api.theorg.com/v1/positions?title=${encodeURIComponent(title)}&location=${encodeURIComponent(userLocation)}&limit=10`, {
+        const apiUrl = `https://api.theorg.com/v1/positions?title=${encodeURIComponent(title)}&location=${encodeURIComponent(userLocation)}&limit=10`;
+        console.log(`API URL: ${apiUrl}`);
+        
+        const response = await fetch(apiUrl, {
           headers: {
             'X-Api-Key': theorgApiKey,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
         });
 
+        console.log(`Response status: ${response.status}`);
+        
         if (!response.ok) {
-          console.error(`API request failed for title ${title}:`, response.status, response.statusText);
+          const errorText = await response.text();
+          console.error(`API request failed for title ${title}:`, response.status, response.statusText, errorText);
           continue;
         }
 
         const data = await response.json();
+        console.log(`API Response for ${title}:`, JSON.stringify(data, null, 2));
         console.log(`Found ${data.data?.length || 0} positions for ${title}`);
         
         if (data.data && Array.isArray(data.data)) {
+          console.log(`Adding ${data.data.length} positions to results`);
           allPositions.push(...data.data);
+        } else {
+          console.log(`No data array found in response for ${title}`);
         }
       } catch (error) {
         console.error(`Error searching for ${title}:`, error);
