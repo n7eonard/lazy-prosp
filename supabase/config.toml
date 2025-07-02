@@ -1,1 +1,6 @@
 project_id = "gkafkjvifovqyfbuglnn"
+
+[auth.external.linkedin_oidc]
+enabled = true
+client_id = "77jdzzkp9v010g"
+secret = "WPL_AP1.oAD3iVt95psDttgY.iDC7UA=="
