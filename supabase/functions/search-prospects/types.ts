@@ -19,11 +19,13 @@ export interface TheOrgPosition {
 }
 
 export interface TheOrgResponse {
-  items: TheOrgPosition[];
-  meta?: {
-    total: number;
-    page: number;
-    limit: number;
+  data: {
+    items: TheOrgPosition[];
+    meta?: {
+      total: number;
+      page: number;
+      limit: number;
+    };
   };
 }
 
