@@ -1,6 +1,12 @@
 import { TheOrgPosition } from './types.ts';
 
 export const transformProspects = (prospects: TheOrgPosition[], countryCode: string) => {
+  // Ensure prospects is an array
+  if (!Array.isArray(prospects)) {
+    console.error('transformProspects received non-array:', typeof prospects, prospects);
+    return [];
+  }
+  
   return prospects.map(prospect => ({
     name: prospect.name || 'Unknown',
     title: prospect.title || 'Unknown Title',
