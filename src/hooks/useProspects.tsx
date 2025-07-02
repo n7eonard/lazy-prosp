@@ -92,6 +92,10 @@ export const useProspects = () => {
       }
 
       if (!searchData?.success || !searchData?.prospects) {
+        console.log('Debug - searchData structure:', JSON.stringify(searchData, null, 2));
+        console.log('Debug - searchData.success:', searchData?.success);
+        console.log('Debug - searchData.prospects:', searchData?.prospects);
+        console.log('Debug - prospects length:', searchData?.prospects?.length);
         throw new Error('No prospects found from theorg.com');
       }
 
