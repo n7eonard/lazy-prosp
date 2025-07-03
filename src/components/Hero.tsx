@@ -64,7 +64,7 @@ const Hero = () => {
             </div>
             <h3 className="text-lg font-semibold mb-2">Smart Discovery</h3>
             <p className="text-muted-foreground text-sm">
-              AI-powered scraping of theorg.com to find relevant CPOs and VP Products
+              AI-powered scraping to find relevant Product Leaders that might need your help to support their teams
             </p>
           </div>
           
