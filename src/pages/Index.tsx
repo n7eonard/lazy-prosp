@@ -12,7 +12,7 @@ import { CountrySelector } from "@/components/CountrySelector";
 
 const Index = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { prospects, loading, scanning, selectedCountry, setSelectedCountry, scanLinkedInProspects } = useProspects();
+  const { prospects, loading, scanning, selectedCountry, setSelectedCountry, scanLinkedInProspects, clearResults } = useProspects();
   const { user } = useAuth();
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -49,6 +49,9 @@ const Index = () => {
                 <Button variant="outline" className="gap-2">
                   <Filter className="w-4 h-4" />
                   Filter
+                </Button>
+                <Button variant="outline" className="gap-2" onClick={clearResults}>
+                  New Search
                 </Button>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">

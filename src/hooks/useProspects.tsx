@@ -156,6 +156,36 @@ export const useProspects = () => {
     }
   };
 
+  const clearResults = async () => {
+    if (!user) return;
+    
+    try {
+      // Clear prospects from database
+      const { error } = await supabase
+        .from('prospects')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Clear local state
+      setProspects([]);
+      setSelectedCountry(null);
+
+      toast({
+        title: "Results Cleared",
+        description: "You can now search for prospects in a different country",
+      });
+    } catch (error: any) {
+      console.error('Error clearing results:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear results",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     prospects,
     loading,
@@ -163,6 +193,7 @@ export const useProspects = () => {
     selectedCountry,
     setSelectedCountry,
     scanLinkedInProspects,
-    loadProspects
+    loadProspects,
+    clearResults
   };
 };
