@@ -74,40 +74,45 @@ serve(async (req) => {
       tenureInfo = `${firstName} works at ${company}`
     }
 
-    const prompt = `You are an expert LinkedIn outreach specialist with deep market research capabilities. 
+    const prompt = `You are an expert LinkedIn outreach specialist and business intelligence researcher. You must conduct deep research and write highly intelligent, factual intro messages.
 
-IMPORTANT: Write the entire message in ${targetLanguage.name} language.
+CRITICAL RESEARCH REQUIREMENTS:
+1. Search for recent company news, press releases, funding rounds, product launches
+2. Look for industry trends affecting ${company}
+3. Find leadership changes, partnerships, acquisitions, or strategic initiatives
+4. Research their competitive positioning and market challenges
+5. Identify specific product developments or technology initiatives
 
-Research Task: Conduct comprehensive research about ${company} and write a highly personalized LinkedIn connection request message for ${firstName} who works as ${title} at ${company} in ${location}.
+WRITE IN ${targetLanguage.name} LANGUAGE.
 
-Research Areas to Investigate:
-1. Recent company news, press releases, and announcements
-2. Product launches, updates, or new initiatives  
-3. Industry trends affecting ${company}
-4. Company achievements, funding rounds, or partnerships
-5. Market positioning and competitive landscape
-6. Leadership changes or strategic shifts
-
-Context about the prospect:
-- Name: ${cleanName}
-- Job Title: ${title}
+Target Prospect Analysis:
+- Name: ${cleanName} (${title})
 - Company: ${company}
 - Location: ${location}
 - ${tenureInfo}
-${workEmail ? `- Work Email: ${workEmail}` : ''}
+${workEmail ? `- Email: ${workEmail}` : ''}
 
-Based on your research, write a professional yet friendly LinkedIn intro message that:
-1. References specific recent company news, achievements, or industry developments
-2. Shows genuine understanding of their role and company challenges
-3. Demonstrates how I can help with product scaling and strategy optimization
-4. Is highly personalized to their specific situation and company context
-5. Stays under 200 characters (strict limit for optimal readability)
-6. Uses a professional but approachable tone in ${targetLanguage.name}
-7. Includes a soft call to action that feels natural
+RESEARCH MISSION: Find 1-2 specific, recent, verifiable facts about ${company} that a product strategy expert would reference in conversation.
 
-Focus on being genuinely helpful and insightful rather than sales-oriented. Make it feel like a valuable connection request from an expert in the product/strategy space.
+Examples of good research findings:
+- "saw your Series B announcement"
+- "noticed your new AI product launch"
+- "read about your expansion into European markets"
+- "following your partnership with [Company]"
+- "impressed by your team's growth to 200+ people"
 
-CRITICAL: Write the ENTIRE message in ${targetLanguage.name}. Return ONLY the message text, no quotes or explanations.`
+WRITE A SOPHISTICATED MESSAGE THAT:
+1. Opens with the prospect's name
+2. References ONE specific, recent fact you researched about their company
+3. Demonstrates deep understanding of product strategy challenges
+4. Positions me as someone who helps scale product teams and optimize strategy
+5. Includes a natural, consultative call-to-action
+6. Uses professional but warm tone in ${targetLanguage.name}
+7. Stays under 300 characters (STRICT LIMIT)
+
+AVOID generic phrases. INCLUDE specific research findings. BE AUTHENTIC.
+
+Return ONLY the message text in ${targetLanguage.name}, no explanations.`
 
     // Simulate research phases with delays
     await new Promise(resolve => setTimeout(resolve, 2000)) // Company research phase
@@ -124,10 +129,10 @@ CRITICAL: Write the ENTIRE message in ${targetLanguage.name}. Return ONLY the me
           }]
         }],
         generationConfig: {
-          temperature: 0.8,
-          topK: 40,
+          temperature: 0.9,
+          topK: 50,
           topP: 0.95,
-          maxOutputTokens: 200,
+          maxOutputTokens: 250,
         },
         safetySettings: [
           {
@@ -157,11 +162,11 @@ CRITICAL: Write the ENTIRE message in ${targetLanguage.name}. Return ONLY the me
     const data = await response.json()
     let generatedMessage = data.candidates[0]?.content?.parts[0]?.text || ''
 
-    // Clean up the message and ensure it's under 200 characters
+    // Clean up the message and ensure it's under 300 characters
     generatedMessage = generatedMessage.trim().replace(/^["']|["']$/g, '')
     
-    if (generatedMessage.length > 200) {
-      generatedMessage = generatedMessage.substring(0, 197) + '...'
+    if (generatedMessage.length > 300) {
+      generatedMessage = generatedMessage.substring(0, 297) + '...'
     }
 
     // Add another delay for message crafting phase
