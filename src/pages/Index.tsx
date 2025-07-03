@@ -88,6 +88,7 @@ const Index = () => {
                     linkedinUrl={prospect.linkedin_url || ""}
                     workEmail={prospect.profile_data?.work_email}
                     startDate={prospect.profile_data?.start_date}
+                    countryCode={selectedCountry || "US"}
                   />
                 ))}
               </div>

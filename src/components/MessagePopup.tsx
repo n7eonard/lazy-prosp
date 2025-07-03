@@ -13,15 +13,17 @@ interface MessagePopupProps {
   location: string;
   workEmail?: string;
   startDate?: string;
+  countryCode?: string;
 }
 
-const generateAIIntroMessage = async ({ name, title, company, location, workEmail, startDate }: {
+const generateAIIntroMessage = async ({ name, title, company, location, workEmail, startDate, countryCode }: {
   name: string;
   title: string;
   company: string;
   location: string;
   workEmail?: string;
   startDate?: string;
+  countryCode?: string;
 }) => {
   try {
     const { data, error } = await supabase.functions.invoke('generate-intro-message', {
@@ -31,7 +33,8 @@ const generateAIIntroMessage = async ({ name, title, company, location, workEmai
         company,
         location,
         workEmail,
-        startDate
+        startDate,
+        countryCode
       }
     });
 
@@ -40,15 +43,17 @@ const generateAIIntroMessage = async ({ name, title, company, location, workEmai
   } catch (error) {
     console.error('Error generating AI message:', error);
     // Fallback to basic message
-    const firstName = name.split(' ')[0];
+    const cleanName = name?.trim() || 'Professional';
+    const firstName = cleanName.split(' ')[0] || cleanName;
     return `Hi ${firstName}! I help product leaders scale their teams and optimize strategy. Would love to connect and learn about ${company}'s product initiatives.`;
   }
 };
 
-export const MessagePopup = ({ isOpen, onClose, name, title, company, location, workEmail, startDate }: MessagePopupProps) => {
+export const MessagePopup = ({ isOpen, onClose, name, title, company, location, workEmail, startDate, countryCode }: MessagePopupProps) => {
   const [displayedText, setDisplayedText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [researchPhase, setResearchPhase] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -56,6 +61,26 @@ export const MessagePopup = ({ isOpen, onClose, name, title, company, location, 
       setDisplayedText("");
       setIsStreaming(false);
       setIsGenerating(true);
+      setResearchPhase("Analyzing company profile and recent developments...");
+
+      // Simulate research phases
+      const phases = [
+        "Analyzing company profile and recent developments...",
+        "Researching industry trends and market positioning...",
+        "Investigating recent news, partnerships, and achievements...",
+        "Evaluating product initiatives and strategic direction...",
+        "Crafting personalized message based on research insights..."
+      ];
+
+      let phaseIndex = 0;
+      const phaseInterval = setInterval(() => {
+        if (phaseIndex < phases.length - 1) {
+          phaseIndex++;
+          setResearchPhase(phases[phaseIndex]);
+        } else {
+          clearInterval(phaseInterval);
+        }
+      }, 1500);
 
       // Generate AI message
       generateAIIntroMessage({
@@ -64,12 +89,15 @@ export const MessagePopup = ({ isOpen, onClose, name, title, company, location, 
         company,
         location,
         workEmail,
-        startDate
+        startDate,
+        countryCode
       }).then((fullMessage) => {
+        clearInterval(phaseInterval);
         setIsGenerating(false);
         setIsStreaming(true);
+        setResearchPhase("");
 
-        // Stream the text character by character
+        // Stream the text character by character - slower speed
         let currentIndex = 0;
         const streamInterval = setInterval(() => {
           if (currentIndex < fullMessage.length) {
@@ -79,15 +107,17 @@ export const MessagePopup = ({ isOpen, onClose, name, title, company, location, 
             setIsStreaming(false);
             clearInterval(streamInterval);
           }
-        }, 30);
+        }, 50); // Slower writing speed (was 30ms, now 50ms)
 
         return () => clearInterval(streamInterval);
       }).catch(() => {
+        clearInterval(phaseInterval);
         setIsGenerating(false);
+        setResearchPhase("");
         setDisplayedText("Sorry, I couldn't generate a personalized message at the moment. Please try again.");
       });
     }
-  }, [isOpen, name, title, company, location, workEmail, startDate]);
+  }, [isOpen, name, title, company, location, workEmail, startDate, countryCode]);
 
   const copyToClipboard = () => {
     if (displayedText) {
@@ -135,7 +165,10 @@ export const MessagePopup = ({ isOpen, onClose, name, title, company, location, 
           <div className="bg-yellow-100 p-3 rounded border-l-4 border-yellow-600 min-h-32">
             <p className="text-gray-800 text-sm leading-relaxed font-handwriting whitespace-pre-wrap">
               {isGenerating ? (
-                <span className="text-gray-600 italic">Researching company news and crafting personalized message...</span>
+                <span className="text-gray-600 italic">
+                  {researchPhase}
+                  <span className="animate-pulse ml-1">...</span>
+                </span>
               ) : (
                 <>
                   {displayedText}

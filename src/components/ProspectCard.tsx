@@ -18,6 +18,7 @@ interface ProspectCardProps {
   linkedinUrl?: string;
   workEmail?: string;
   startDate?: string;
+  countryCode?: string;
 }
 
 const ProspectCard = ({ 
@@ -30,7 +31,8 @@ const ProspectCard = ({
   companyLogo,
   linkedinUrl,
   workEmail,
-  startDate
+  startDate,
+  countryCode
 }: ProspectCardProps) => {
   const [showMessagePopup, setShowMessagePopup] = useState(false);
   return (
@@ -135,6 +137,7 @@ const ProspectCard = ({
         location={location}
         workEmail={workEmail}
         startDate={startDate}
+        countryCode={countryCode}
       />
     </Card>
   );
