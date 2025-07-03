@@ -24,12 +24,7 @@ export const useProspects = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Load existing prospects
-  useEffect(() => {
-    if (user) {
-      loadProspects();
-    }
-  }, [user]);
+  // Don't auto-load prospects - let users start fresh with country selection
 
   const loadProspects = async () => {
     if (!user) return;
