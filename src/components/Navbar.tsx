@@ -37,7 +37,7 @@ const Navbar = () => {
           ) : (
             <Button 
               variant="hero" 
-              size="sm" 
+              size="lg" 
               className="gap-2"
               onClick={() => setShowAuthModal(true)}
             >
