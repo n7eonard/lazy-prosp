@@ -58,7 +58,7 @@ const Hero = () => {
         {/* Feature Cards */}
         <div className="grid md:grid-cols-3 gap-6 mt-16">
           <div className="bg-gradient-card border border-card-border rounded-xl p-6 shadow-card hover:shadow-glow transition-smooth">
-            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
               <Target className="w-6 h-6 text-primary" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Smart Discovery</h3>
@@ -68,7 +68,7 @@ const Hero = () => {
           </div>
           
           <div className="bg-gradient-card border border-card-border rounded-xl p-6 shadow-card hover:shadow-glow transition-smooth">
-            <div className="w-12 h-12 bg-linkedin/10 rounded-lg flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-linkedin/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
               <Target className="w-6 h-6 text-linkedin" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Connection Analysis</h3>
@@ -78,7 +78,7 @@ const Hero = () => {
           </div>
           
           <div className="bg-gradient-card border border-card-border rounded-xl p-6 shadow-card hover:shadow-glow transition-smooth">
-            <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
               <MessageCircle className="w-6 h-6 text-success" />
             </div>
             <h3 className="text-lg font-semibold mb-2">Tailored Messages</h3>
