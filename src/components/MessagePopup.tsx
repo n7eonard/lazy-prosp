@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Copy, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MessagePopupProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ interface MessagePopupProps {
   startDate?: string;
 }
 
-const generateIntroMessage = ({ name, title, company, location, workEmail, startDate }: {
+const generateAIIntroMessage = async ({ name, title, company, location, workEmail, startDate }: {
   name: string;
   title: string;
   company: string;
@@ -22,72 +23,69 @@ const generateIntroMessage = ({ name, title, company, location, workEmail, start
   workEmail?: string;
   startDate?: string;
 }) => {
-  const firstName = name.split(' ')[0];
-  const companyName = company;
-  const jobTitle = title;
-  
-  // Calculate tenure if startDate is available
-  let tenureText = '';
-  if (startDate) {
-    const start = new Date(startDate);
-    const now = new Date();
-    const monthsDiff = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
-    
-    if (monthsDiff >= 12) {
-      const years = Math.floor(monthsDiff / 12);
-      tenureText = years === 1 ? ' over the past year' : ` over the past ${years} years`;
-    } else if (monthsDiff > 0) {
-      tenureText = ' recently';
-    }
-  }
-  
-  // Generate personalized message within 300 character limit
-  const messages = [
-    `Hi ${firstName}! I help product leaders scale their teams and optimize product strategy. Would love to connect and learn about ${companyName}'s product initiatives${tenureText}.`,
-    
-    `Hello ${firstName}, I work with ${jobTitle}s on product scaling challenges. Impressed by what you're building at ${companyName}${tenureText}. Happy to exchange insights!`,
-    
-    `Hi ${firstName}! I specialize in helping product teams overcome scaling challenges. Would love to connect and hear about your experience as ${jobTitle} at ${companyName}.`
-  ];
-  
-  // Pick the shortest message that fits under 300 characters
-  const selectedMessage = messages.find(msg => msg.length <= 300) || messages[0].substring(0, 297) + '...';
-  
-  return selectedMessage;
-};
-
-export const MessagePopup = ({ isOpen, onClose, name, title, company, location, workEmail, startDate }: MessagePopupProps) => {
-  const [displayedText, setDisplayedText] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (isOpen) {
-      const fullMessage = generateIntroMessage({
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-intro-message', {
+      body: {
         name,
         title,
         company,
         location,
         workEmail,
         startDate
-      });
+      }
+    });
 
+    if (error) throw error;
+    return data.message;
+  } catch (error) {
+    console.error('Error generating AI message:', error);
+    // Fallback to basic message
+    const firstName = name.split(' ')[0];
+    return `Hi ${firstName}! I help product leaders scale their teams and optimize strategy. Would love to connect and learn about ${company}'s product initiatives.`;
+  }
+};
+
+export const MessagePopup = ({ isOpen, onClose, name, title, company, location, workEmail, startDate }: MessagePopupProps) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (isOpen) {
       setDisplayedText("");
-      setIsStreaming(true);
+      setIsStreaming(false);
+      setIsGenerating(true);
 
-      // Stream the text character by character
-      let currentIndex = 0;
-      const streamInterval = setInterval(() => {
-        if (currentIndex < fullMessage.length) {
-          setDisplayedText(prev => prev + fullMessage[currentIndex]);
-          currentIndex++;
-        } else {
-          setIsStreaming(false);
-          clearInterval(streamInterval);
-        }
-      }, 30); // Adjust speed as needed
+      // Generate AI message
+      generateAIIntroMessage({
+        name,
+        title,
+        company,
+        location,
+        workEmail,
+        startDate
+      }).then((fullMessage) => {
+        setIsGenerating(false);
+        setIsStreaming(true);
 
-      return () => clearInterval(streamInterval);
+        // Stream the text character by character
+        let currentIndex = 0;
+        const streamInterval = setInterval(() => {
+          if (currentIndex < fullMessage.length) {
+            setDisplayedText(prev => prev + fullMessage[currentIndex]);
+            currentIndex++;
+          } else {
+            setIsStreaming(false);
+            clearInterval(streamInterval);
+          }
+        }, 30);
+
+        return () => clearInterval(streamInterval);
+      }).catch(() => {
+        setIsGenerating(false);
+        setDisplayedText("Sorry, I couldn't generate a personalized message at the moment. Please try again.");
+      });
     }
   }, [isOpen, name, title, company, location, workEmail, startDate]);
 
@@ -98,6 +96,8 @@ export const MessagePopup = ({ isOpen, onClose, name, title, company, location, 
         title: "Message copied!",
         description: "LinkedIn intro message copied to clipboard.",
       });
+      // Close the popup after copying
+      onClose();
     }
   };
 
@@ -134,8 +134,14 @@ export const MessagePopup = ({ isOpen, onClose, name, title, company, location, 
           
           <div className="bg-yellow-100 p-3 rounded border-l-4 border-yellow-600 min-h-32">
             <p className="text-gray-800 text-sm leading-relaxed font-handwriting whitespace-pre-wrap">
-              {displayedText}
-              {isStreaming && <span className="animate-pulse">|</span>}
+              {isGenerating ? (
+                <span className="text-gray-600 italic">Researching company news and crafting personalized message...</span>
+              ) : (
+                <>
+                  {displayedText}
+                  {isStreaming && <span className="animate-pulse">|</span>}
+                </>
+              )}
             </p>
           </div>
 
