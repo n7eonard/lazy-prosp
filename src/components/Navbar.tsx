@@ -15,7 +15,7 @@ const Navbar = () => {
           <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
             <Search className="w-4 h-4 text-primary-foreground" />
           </div>
-          <span className="text-lg font-bold text-foreground">ProspectAgent</span>
+          <span className="text-lg font-bold text-foreground">LazyProsp AI</span>
         </div>
         
         <div className="hidden md:flex items-center gap-6">
