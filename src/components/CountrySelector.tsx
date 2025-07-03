@@ -31,8 +31,8 @@ interface CountrySelectorProps {
 export const CountrySelector = ({ selectedCountry, onCountrySelect }: CountrySelectorProps) => {
   return (
     <div className="text-center mb-8">
-      <h3 className="text-lg font-semibold mb-4">Select your target market</h3>
-      
+      <h3 className="text-muted-foreground mb-6"</h3>
+        Select your target market
       
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 max-w-4xl mx-auto">
         {countries.map((country) => (
