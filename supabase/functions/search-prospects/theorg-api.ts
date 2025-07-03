@@ -4,7 +4,7 @@ export const searchProspects = async (theorgApiKey: string, countryCode: string,
   console.log(`Searching for product leaders in country: ${countryCode}`);
   
   const requestBody = {
-    limit: 10,
+    limit: 6,
     offset: 0,
     filters: {
       "departments": ["product"],
