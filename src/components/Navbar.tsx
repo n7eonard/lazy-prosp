@@ -36,13 +36,13 @@ const Navbar = () => {
             </>
           ) : (
             <Button 
-              variant="linkedin" 
+              variant="hero" 
               size="sm" 
               className="gap-2"
               onClick={() => setShowAuthModal(true)}
             >
               <Users className="w-4 h-4" />
-              Connect LinkedIn
+              Get started
             </Button>
           )}
         </div>

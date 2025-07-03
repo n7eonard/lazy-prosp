@@ -4,6 +4,48 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Building2, MapPin, Users, MessageSquare, ExternalLink, Mail, Calendar } from "lucide-react";
 
+const generateIntroMessage = ({ name, title, company, location, workEmail, startDate }: {
+  name: string;
+  title: string;
+  company: string;
+  location: string;
+  workEmail?: string;
+  startDate?: string;
+}) => {
+  const firstName = name.split(' ')[0];
+  const companyName = company;
+  const jobTitle = title;
+  
+  // Calculate tenure if startDate is available
+  let tenureText = '';
+  if (startDate) {
+    const start = new Date(startDate);
+    const now = new Date();
+    const monthsDiff = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30));
+    
+    if (monthsDiff >= 12) {
+      const years = Math.floor(monthsDiff / 12);
+      tenureText = years === 1 ? ' over the past year' : ` over the past ${years} years`;
+    } else if (monthsDiff > 0) {
+      tenureText = ' recently';
+    }
+  }
+  
+  // Generate personalized message within 300 character limit
+  const messages = [
+    `Hi ${firstName}! I help product leaders scale their teams and optimize product strategy. Would love to connect and learn about ${companyName}'s product initiatives${tenureText}.`,
+    
+    `Hello ${firstName}, I work with ${jobTitle}s on product scaling challenges. Impressed by what you're building at ${companyName}${tenureText}. Happy to exchange insights!`,
+    
+    `Hi ${firstName}! I specialize in helping product teams overcome scaling challenges. Would love to connect and hear about your experience as ${jobTitle} at ${companyName}.`
+  ];
+  
+  // Pick the shortest message that fits under 300 characters
+  const selectedMessage = messages.find(msg => msg.length <= 300) || messages[0].substring(0, 297) + '...';
+  
+  return selectedMessage;
+};
+
 interface ProspectCardProps {
   name: string;
   title: string;
@@ -106,9 +148,25 @@ const ProspectCard = ({
           
           {/* Actions */}
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1 gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1 gap-2"
+              onClick={() => {
+                const message = generateIntroMessage({
+                  name,
+                  title,
+                  company,
+                  location,
+                  workEmail,
+                  startDate
+                });
+                navigator.clipboard.writeText(message);
+                // You could add a toast notification here
+              }}
+            >
               <MessageSquare className="w-4 h-4" />
-              Generate Message
+              Write intro message
             </Button>
             <Button variant="linkedin" size="sm">
               Connect

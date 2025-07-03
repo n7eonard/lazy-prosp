@@ -54,10 +54,6 @@ const Hero = () => {
             {user ? 'Start Prospecting' : 'Get Started'}
             <ArrowRight className="w-5 h-5" />
           </Button>
-          <Button variant="outline" size="lg" className="gap-2">
-            <Target className="w-5 h-5" />
-            View Demo
-          </Button>
         </div>
         
         {/* Feature Cards */}

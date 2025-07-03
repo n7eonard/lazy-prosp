@@ -23,11 +23,13 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Discovered Prospects
+              {prospects.length > 0 ? "Meet your next clients" : "Let's scan the Product Sphere"}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               {user 
-                ? "AI-powered analysis of LinkedIn profiles with connection insights"
+                ? prospects.length > 0 
+                  ? "AI-powered analysis of LinkedIn profiles with connection insights"
+                  : "Choose a country and start discovering product leaders"
                 : "Connect your LinkedIn account to start discovering prospects"
               }
             </p>
