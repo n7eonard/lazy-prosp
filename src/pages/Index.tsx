@@ -1,7 +1,9 @@
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ProspectCard from "@/components/ProspectCard";
 import MessageComposer from "@/components/MessageComposer";
+import LinkedInAuthModal from "@/components/LinkedInAuthModal";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Users, Loader2 } from "lucide-react";
 import { useProspects } from "@/hooks/useProspects";
@@ -9,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { CountrySelector } from "@/components/CountrySelector";
 
 const Index = () => {
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const { prospects, loading, scanning, selectedCountry, setSelectedCountry, scanLinkedInProspects } = useProspects();
   const { user } = useAuth();
   return (
@@ -131,6 +134,15 @@ const Index = () => {
             <div className="text-center py-12">
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">Connect Your LinkedIn</h3>
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="gap-2 mb-4"
+                onClick={() => setShowAuthModal(true)}
+              >
+                <Users className="w-4 h-4" />
+                Get started
+              </Button>
               <p className="text-muted-foreground">
                 Authenticate with LinkedIn to start discovering prospects
               </p>
@@ -138,6 +150,17 @@ const Index = () => {
           )}
         </div>
       </section>
+      
+      <LinkedInAuthModal 
+        open={showAuthModal}
+        onOpenChange={setShowAuthModal}
+        onAuthSuccess={() => {
+          setShowAuthModal(false);
+          setTimeout(() => {
+            document.getElementById('prospects-section')?.scrollIntoView({ behavior: 'smooth' });
+          }, 1000);
+        }}
+      />
     </div>
   );
 };
