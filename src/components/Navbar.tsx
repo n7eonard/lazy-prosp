@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Users, MessageSquare, Search, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
 import LinkedInAuthModal from "./LinkedInAuthModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useProspects } from "@/hooks/useProspects";
@@ -11,19 +12,21 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-30 p-8 lg:p-12">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
             <Search className="w-4 h-4 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold text-foreground">LazyProsp AI</span>
-        </div>
+        </Link>
         
         <div className="hidden md:flex items-center gap-6">
           {user ? (
             <>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <Users className="w-4 h-4" />
-                Prospects
+              <Button variant="ghost" size="sm" className="gap-2" asChild>
+                <Link to="/prospects">
+                  <Users className="w-4 h-4" />
+                  Prospects
+                </Link>
               </Button>
               <Button variant="ghost" size="sm" className="gap-2">
                 <MessageSquare className="w-4 h-4" />

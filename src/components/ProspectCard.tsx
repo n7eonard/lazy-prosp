@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Building2, MapPin, Users, MessageSquare, ExternalLink, Mail, Calendar } from "lucide-react";
+import { Building2, MapPin, Users, MessageSquare, ExternalLink, Mail, Calendar, Bookmark, BookmarkCheck } from "lucide-react";
 import { MessagePopup } from "@/components/MessagePopup";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 
 interface ProspectCardProps {
@@ -35,6 +38,59 @@ const ProspectCard = ({
   countryCode
 }: ProspectCardProps) => {
   const [showMessagePopup, setShowMessagePopup] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  const saveProspect = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to save prospects.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('prospects')
+        .insert({
+          user_id: user.id,
+          name,
+          title,
+          company,
+          location,
+          mutual_connections: mutualConnections,
+          avatar_url: avatar,
+          linkedin_url: linkedinUrl,
+          profile_data: {
+            work_email: workEmail,
+            start_date: startDate,
+            source: 'theorg.com'
+          }
+        });
+
+      if (error) throw error;
+
+      setIsSaved(true);
+      toast({
+        title: "Prospect saved!",
+        description: `${name} has been added to your prospects list.`,
+      });
+    } catch (error) {
+      console.error('Error saving prospect:', error);
+      toast({
+        title: "Failed to save prospect",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
   return (
     <Card className="bg-gradient-card border-card-border p-6 shadow-card hover:shadow-glow transition-smooth group">
       <div className="flex items-start gap-4">
@@ -61,18 +117,33 @@ const ProspectCard = ({
         
         {/* Main Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="font-semibold text-foreground truncate">{name}</h3>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="opacity-0 group-hover:opacity-100 transition-smooth"
-              onClick={() => linkedinUrl && window.open(linkedinUrl, '_blank')}
-              disabled={!linkedinUrl}
-            >
-              <ExternalLink className="w-4 h-4" />
-            </Button>
-          </div>
+            <div className="flex items-start justify-between mb-2">
+              <h3 className="font-semibold text-foreground truncate">{name}</h3>
+              <div className="flex gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="opacity-0 group-hover:opacity-100 transition-smooth"
+                  onClick={saveProspect}
+                  disabled={isSaving || isSaved}
+                >
+                  {isSaved ? (
+                    <BookmarkCheck className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Bookmark className="w-4 h-4" />
+                  )}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="opacity-0 group-hover:opacity-100 transition-smooth"
+                  onClick={() => linkedinUrl && window.open(linkedinUrl, '_blank')}
+                  disabled={!linkedinUrl}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           
           <p className="text-sm text-muted-foreground mb-1">{title}</p>
           

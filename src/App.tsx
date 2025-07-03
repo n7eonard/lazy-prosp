@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import SuccessBanner from "@/components/SuccessBanner";
 import Index from "./pages/Index";
+import Prospects from "./pages/Prospects";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -30,6 +31,7 @@ const AppContent = () => {
       />
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/prospects" element={<Prospects />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
