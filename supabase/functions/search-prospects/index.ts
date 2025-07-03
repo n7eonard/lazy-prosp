@@ -22,6 +22,7 @@ Deno.serve(async (req) => {
     // Get request body
     const body = await req.json();
     const requestedCountryCode = body?.countryCode;
+    const searchSession = body?.searchSession || 0; // Track search attempts for this country
     
     if (!requestedCountryCode) {
       return new Response(JSON.stringify({ 
@@ -31,6 +32,8 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log(`Search session for ${requestedCountryCode}: ${searchSession}`);
 
     // Get the API key for theorg.com
     const theorgApiKey = Deno.env.get('THEORG_API_KEY');
@@ -58,8 +61,8 @@ Deno.serve(async (req) => {
       'CPO'
     ];
 
-    // Search for prospects using theorg.com API
-    const allProspects = await searchProspects(theorgApiKey, countryCode, targetTitles);
+    // Search for prospects using theorg.com API with session tracking
+    const allProspects = await searchProspects(theorgApiKey, countryCode, targetTitles, searchSession);
 
     console.log(`Total unique prospects found: ${allProspects.length}`);
 

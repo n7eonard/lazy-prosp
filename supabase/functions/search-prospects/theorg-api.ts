@@ -1,11 +1,19 @@
 import { TheOrgResponse, TheOrgPosition } from './types.ts';
 
-export const searchProspects = async (theorgApiKey: string, countryCode: string, targetTitles: string[]): Promise<TheOrgPosition[]> => {
+export const searchProspects = async (theorgApiKey: string, countryCode: string, targetTitles: string[], searchSession?: number): Promise<TheOrgPosition[]> => {
   console.log(`Searching for product leaders in country: ${countryCode}`);
   
+  // Create variation in results to avoid user fatigue
+  // Use a combination of random offset and search session to vary results
+  const baseOffset = searchSession ? (searchSession * 3) % 15 : 0; // Rotate through different starting points
+  const randomOffset = Math.floor(Math.random() * 5); // Add some randomness
+  const finalOffset = baseOffset + randomOffset;
+  
+  console.log(`Search session: ${searchSession}, Base offset: ${baseOffset}, Random offset: ${randomOffset}, Final offset: ${finalOffset}`);
+  
   const requestBody = {
-    limit: 6,
-    offset: 0,
+    limit: 8, // Increased limit to get more variety
+    offset: finalOffset,
     filters: {
       "departments": ["product"],
       "locations": [{"country": countryCode}]
@@ -34,9 +42,19 @@ export const searchProspects = async (theorgApiKey: string, countryCode: string,
 
   const responseData: TheOrgResponse = await response.json();
   console.log(`API Response type: ${typeof responseData}`);
-  console.log(`API Response structure:`, JSON.stringify(responseData, null, 2));
   console.log(`Response items array length: ${responseData.data?.items?.length || 'N/A'}`);
-  console.log(`Response items type: ${typeof responseData.data?.items}`);
   
-  return responseData.data?.items || [];
+  let prospects = responseData.data?.items || [];
+  
+  // Shuffle the results to add more randomness
+  for (let i = prospects.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [prospects[i], prospects[j]] = [prospects[j], prospects[i]];
+  }
+  
+  // Limit to 6 final results to maintain UI consistency
+  prospects = prospects.slice(0, 6);
+  
+  console.log(`Returning ${prospects.length} randomized prospects`);
+  return prospects;
 };

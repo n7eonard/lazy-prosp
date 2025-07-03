@@ -21,6 +21,7 @@ export const useProspects = () => {
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [searchSessions, setSearchSessions] = useState<{[key: string]: number}>({});
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -75,6 +76,16 @@ export const useProspects = () => {
       setScanning(true);
       console.log('Starting prospect search...');
       
+      // Track search sessions for this country to provide variety
+      const currentSession = searchSessions[targetCountry] || 0;
+      const newSession = currentSession + 1;
+      setSearchSessions(prev => ({
+        ...prev,
+        [targetCountry]: newSession
+      }));
+      
+      console.log(`Search session for ${targetCountry}: ${newSession}`);
+      
       // Call the new search-prospects edge function
       console.log('Calling search-prospects edge function...');
       const session = await supabase.auth.getSession();
@@ -87,7 +98,8 @@ export const useProspects = () => {
             Authorization: `Bearer ${session.data.session?.access_token}`,
           },
           body: {
-            countryCode: targetCountry
+            countryCode: targetCountry,
+            searchSession: newSession
           }
         }
       );
@@ -163,9 +175,10 @@ export const useProspects = () => {
 
       if (error) throw error;
 
-      // Clear local state
+      // Clear local state and reset search sessions
       setProspects([]);
       setSelectedCountry(null);
+      setSearchSessions({});
 
       toast({
         title: "Results Cleared",
