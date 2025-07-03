@@ -126,9 +126,6 @@ const Index = () => {
             <div className="text-center py-12">
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">Select a Country</h3>
-              <p className="text-muted-foreground">
-                Choose a country above to start discovering product leaders
-              </p>
             </div>
           )}
           
