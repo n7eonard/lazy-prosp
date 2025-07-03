@@ -92,10 +92,6 @@ const Index = () => {
                 ))}
               </div>
               
-              {/* Message Composer */}
-              <div className="max-w-2xl mx-auto">
-                <MessageComposer prospectName={prospects[0]?.name || "prospect"} />
-              </div>
             </>
           )}
           
