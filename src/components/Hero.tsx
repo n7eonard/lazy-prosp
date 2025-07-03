@@ -20,7 +20,7 @@ const Hero = () => {
         <div className="mb-6">
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-card-border rounded-full text-sm text-muted-foreground">
             <Zap className="w-4 h-4 text-primary" />
-            Sales prospecting done right
+            PM prospecting done right
           </span>
         </div>
         
@@ -33,8 +33,8 @@ const Hero = () => {
         </h1>
         
         <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Automatically discover Chief Product Officers and VP Products from theorg.com, 
-          analyze mutual connections, and craft perfect intro messages.
+          Automatically discover Chief Product Officers and VP Products from your region, 
+          get access to useful info, analyze mutual connections and craft perfect intro messages.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
