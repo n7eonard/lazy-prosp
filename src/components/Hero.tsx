@@ -25,10 +25,10 @@ const Hero = () => {
         </div>
         
         <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-          Find Your Next Product Gig
+          Find Your Next Product
           <br />
           <span className="text-foreground">
-            While You Sleep
+           Gig While You Sleep
           </span>
         </h1>
         
