@@ -179,7 +179,7 @@ export const MessagePopup = ({ isOpen, onClose, name, title, company, location, 
           </div>
 
           <div className="flex items-center justify-between text-xs text-gray-600">
-            <span>{displayedText.length}/300 characters</span>
+            <span>{displayedText.length}/200 characters</span>
             {!isStreaming && (
               <Button
                 variant="outline"

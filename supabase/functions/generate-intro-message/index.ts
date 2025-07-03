@@ -23,6 +23,10 @@ serve(async (req) => {
     const cleanName = name?.trim() || 'Professional'
     const firstName = cleanName.split(' ')[0] || cleanName
     
+    console.log('Debug - Original name:', name)
+    console.log('Debug - Clean name:', cleanName)
+    console.log('Debug - First name:', firstName)
+    
     // Language mapping based on country code
     const languageMap: { [key: string]: { code: string, name: string } } = {
       'US': { code: 'en', name: 'English' },
@@ -41,19 +45,25 @@ serve(async (req) => {
 
     const targetLanguage = languageMap[countryCode] || { code: 'en', name: 'English' }
     
-    // Calculate tenure information
+    // Calculate tenure information - avoid undefined values
     let tenureInfo = ''
-    if (startDate && startDate !== 'undefined') {
+    if (startDate && startDate !== 'undefined' && startDate !== null) {
       try {
         const start = new Date(startDate)
         const now = new Date()
-        const monthsDiff = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30))
         
-        if (monthsDiff >= 12) {
-          const years = Math.floor(monthsDiff / 12)
-          tenureInfo = `${firstName} has been working at ${company} for ${years === 1 ? '1 year' : `${years} years`}`
-        } else if (monthsDiff > 0) {
-          tenureInfo = `${firstName} recently joined ${company}`
+        // Check if date is valid
+        if (!isNaN(start.getTime())) {
+          const monthsDiff = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30))
+          
+          if (monthsDiff >= 12) {
+            const years = Math.floor(monthsDiff / 12)
+            tenureInfo = `${firstName} has been working at ${company} for ${years === 1 ? '1 year' : `${years} years`}`
+          } else if (monthsDiff > 0) {
+            tenureInfo = `${firstName} recently joined ${company}`
+          } else {
+            tenureInfo = `${firstName} works at ${company}`
+          }
         } else {
           tenureInfo = `${firstName} works at ${company}`
         }
@@ -91,7 +101,7 @@ Based on your research, write a professional yet friendly LinkedIn intro message
 2. Shows genuine understanding of their role and company challenges
 3. Demonstrates how I can help with product scaling and strategy optimization
 4. Is highly personalized to their specific situation and company context
-5. Stays under 270 characters (strict limit for LinkedIn)
+5. Stays under 200 characters (strict limit for optimal readability)
 6. Uses a professional but approachable tone in ${targetLanguage.name}
 7. Includes a soft call to action that feels natural
 
@@ -147,11 +157,11 @@ CRITICAL: Write the ENTIRE message in ${targetLanguage.name}. Return ONLY the me
     const data = await response.json()
     let generatedMessage = data.candidates[0]?.content?.parts[0]?.text || ''
 
-    // Clean up the message and ensure it's under 270 characters
+    // Clean up the message and ensure it's under 200 characters
     generatedMessage = generatedMessage.trim().replace(/^["']|["']$/g, '')
     
-    if (generatedMessage.length > 270) {
-      generatedMessage = generatedMessage.substring(0, 267) + '...'
+    if (generatedMessage.length > 200) {
+      generatedMessage = generatedMessage.substring(0, 197) + '...'
     }
 
     // Add another delay for message crafting phase
