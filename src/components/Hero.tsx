@@ -33,7 +33,7 @@ const Hero = () => {
         </h1>
         
         <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Automatically spot nearby Product Execs, warm your way in, and land the right gig
+          No More Scrolling LinkedIn - Automatically spot nearby Product Execs, warm your way in, and land the right gig
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
