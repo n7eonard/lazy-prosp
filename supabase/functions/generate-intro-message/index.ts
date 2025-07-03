@@ -117,7 +117,7 @@ Return ONLY the message text in ${targetLanguage.name}, no explanations.`
     // Simulate research phases with delays
     await new Promise(resolve => setTimeout(resolve, 2000)) // Company research phase
     
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
